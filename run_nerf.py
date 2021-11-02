@@ -24,6 +24,7 @@ from load_llff_video import load_video_data
 from skimage.io import imread
 from skimage.transform import resize
 from lpip import models
+os.system("pip3 install torchdiffeq")
 from torchdiffeq import odeint, odeint_adjoint
 from tqdm import tqdm, trange
 
@@ -675,7 +676,6 @@ def config_parser():
 
 
 def train():
-
     parser = config_parser()
     args = parser.parse_args()
 
@@ -908,7 +908,7 @@ def train():
             loc_t_before = loc_t_before.cuda()
             loc_t_after = loc_t_after.cuda()
 
-    N_iters = 1000000
+    N_iters = 200000
     print('Begin')
     print('TRAIN views are', i_train)
     #print('TEST views are', i_test)
@@ -1468,6 +1468,5 @@ def train():
 
 if __name__=='__main__':
     # torch.set_default_tensor_type('torch.cuda.FloatTensor')
-
     train()
 
