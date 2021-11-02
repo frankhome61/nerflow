@@ -320,11 +320,11 @@ def estimate(tenFirst, tenSecond):
 
 if __name__ == '__main__':
 
-    base_path = "/data/vision/billf/scratch/yilundu/nerf-pytorch/data/nerf_synthetic/pouring_camera_1012_stereo/train"
+    base_path = "/home/guowei/Research/View-Synthesis-Current-Works/nerflow/data/nerf_llff_data/man/images_1920x1080"
     # base_path = "/data/vision/billf/scratch/yilundu/nerf-pytorch/data/nerf_llff_data/consistent_depth/images_5"
-    for i in range(1, 1000):
-        string_first = osp.join(base_path, "r_{}.png".format(i))
-        string_second = osp.join(base_path, "r_{}_flow.png".format(i))
+    for i in range(0, 10):
+        string_first = osp.join(base_path, "00{}.png".format(i))
+        string_second = osp.join(base_path, "00{}_flow.jpg".format(i))
         tenFirst = torch.FloatTensor(numpy.ascontiguousarray(numpy.array(PIL.Image.open(string_first))[:, :, ::-1].transpose(2, 0, 1).astype(numpy.float32) * (1.0 / 255.0)))
         tenSecond = torch.FloatTensor(numpy.ascontiguousarray(numpy.array(PIL.Image.open(string_second))[:, :, ::-1].transpose(2, 0, 1).astype(numpy.float32) * (1.0 / 255.0)))
 
