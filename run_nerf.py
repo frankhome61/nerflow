@@ -1414,7 +1414,7 @@ def train():
                 }, path)
                 print('Saved checkpoints at', path)
 
-        if i%args.i_video==0 and i > 0:
+        if False: # i%args.i_video==0 and i > 0:
         #if True:
         # if i%args.i_video==0:
         # if True:
