@@ -93,8 +93,7 @@ def _minify(basedir, factors=[], resolutions=[]):
         
         
 def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
-
-    poses_arr = np.load(os.path.join(basedir, 'poses_bounds.npy'))
+    poses_arr = np.load(os.path.join(basedir, "poses_bounds.npy"))
     poses = poses_arr[:, :-2].reshape([-1, 3, 5]).transpose([1,2,0])
     bds = poses_arr[:, -2:].transpose([1,0])
 
@@ -104,24 +103,9 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
 
     sfx = ''
 
-    if factor is not None:
-        sfx = '_{}'.format(factor)
-        _minify(basedir, factors=[factor])
-        factor = factor
-    elif height is not None:
-        factor = sh[0] / float(height)
-        width = int(sh[1] / factor)
-        _minify(basedir, resolutions=[[height, width]])
-        sfx = '_{}x{}'.format(width, height)
-    elif width is not None:
-        factor = sh[1] / float(width)
-        height = int(sh[0] / factor)
-        _minify(basedir, resolutions=[[height, width]])
-        sfx = '_{}x{}'.format(width, height)
-    else:
-        factor = 1
+    factor = 1
 
-    imgdir = os.path.join(basedir, 'images' + sfx)
+    imgdir = os.path.join(basedir, 'images')
     if not os.path.exists(imgdir):
         print( imgdir, 'does not exist, returning' )
         return
@@ -145,7 +129,6 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
         else:
             return imageio.imread(f)
 
-    depth_info = "/data/vision/billf/scratch/yilundu/consistent_depth/ayush_nonrigid/depth_mc/depth"
     depths = []
     imgs = [imread(f)[...,:3]/255. for f in imgfiles]
     imgs = np.stack(imgs, -1)
@@ -171,26 +154,12 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
 
     coord = coord.reshape((-1, 2))
 
-    depth_paths = sorted(glob.glob('/data/vision/billf/scratch/yilundu/consistent_depth/data/videos/ayush/disp/*.npy'))
+    depth_paths = sorted(glob.glob(os.path.join(basedir, "disp", "*.npy")))
     depth_files = []
     for depth_path in depth_paths:
         depth_img =  -np.load(depth_path)
         depth_files.append(depth_img)
 
-    # depth_files = []
-    # for imgfile in imgfiles:
-    #     fname = imgfile.split("/")[-1]
-    #     suffix = fname[-9:-4]
-    #     depth_img = "frame_0{:05}.raw".format(int(suffix) - 1)
-    #     depth_img = osp.join(depth_info, depth_img)
-    #     depth_img = load_raw_float32_image(depth_img)
-    #     depth_img = cv2.resize(depth_img, imgs[0].shape[:2][::-1], interpolation=cv2.INTER_NEAREST)
-    #     depth_img = 1 / depth_img
-    #     depth_files.append(depth_img)
-
-
-    flow_dir = "/data/vision/billf/scratch/yilundu/consistent_depth/data/videos/ayush/images_2"
-    flow_files = sorted(glob.glob(flow_dir + "/*.npy"))
     hwf = poses[0, :3, -1]
     print("hwf: ", hwf)
 
@@ -211,9 +180,9 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
 
     vis = False
     size = 5
-
-    flow_files = glob.glob(osp.join("/data/vision/billf/scratch/yilundu/consistent_depth/data/videos/ayush", "flow_i1", "*.npz"))
-    mask_dir = "/data/vision/billf/scratch/yilundu/consistent_depth/data/videos/ayush/motion_masks"
+    
+    flow_files = glob.glob(osp.join(basedir, "flow_i1", "*.npz"))
+    mask_dir = os.path.join(basedir, "motion_masks")
 
     for flow_file in flow_files:
         flow_suffix = flow_file.split("/")[-1]
@@ -231,7 +200,7 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
         data = np.load(flow_file)
         flow_im, flow_mask = data['flow'], data['mask']
 
-        motion_mask = osp.join(mask_dir, "image{:05d}".format(int(str_idx)+1) + ".png")
+        motion_mask = osp.join(mask_dir, "{:05d}".format(int(str_idx)) + ".png")
         motion_mask = imread(motion_mask)
         motion_mask = motion_mask > 128
 
@@ -419,12 +388,10 @@ def spherify_poses(poses, bds):
     return poses_reset, new_poses, bds
     
 
-def load_video_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=False, path_zflat=False):
+def load_video_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=False, path_zflat=False, scene_flow=False, velocity=False):
     factor = 2
-    noise = basedir.noise
+    noise = False
     args = basedir
-    basedir = "/data/vision/billf/scratch/yilundu/consistent_depth/data/videos/ayush/"
-    
 
     poses, bds, images, train_timesteps, depths, location, location_timesteps, bounds = _load_data(basedir, factor=factor) # factor=8 downsamples original imgs by 8x
     print('Loaded', basedir, bds.min(), bds.max())
@@ -493,7 +460,8 @@ def load_video_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fa
     poses = poses[:, :3, :4]  # N x 3 x 4
     i_split = [np.arange(poses.shape[0]), np.arange(poses.shape[0]), np.arange(poses.shape[0])]
 
-    if args.scene_flow or args.velocity:
+    print(args)
+    if scene_flow or velocity:
         return bds, images, poses, render_poses, render_timesteps, hwf, i_split, train_timesteps, location, location_timesteps, bounds, depths
     else:
         # return images, poses, bds, render_poses, i_test

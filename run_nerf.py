@@ -600,6 +600,7 @@ def config_parser():
     parser.add_argument("--no_reload", action='store_true', help='do not reload weights from saved ckpt')
     parser.add_argument("--use_time", action='store_true', help='add time to pose regression')
     parser.add_argument("--ft_path", type=str, default=None, help='specific weights npy file to reload for coarse network')
+    parser.add_argument("--N_iters", type=int, default=200000, help='Training steps')
 
     # rendering options
     parser.add_argument("--N_samples", type=int, default=64, help='number of coarse samples per ray')
@@ -682,18 +683,18 @@ def train():
 
     # Load data
 
-    if args.dataset_type == 'video':
+    if args.dataset_type == 'llff':
         if args.optical_flow:
-            bds, images, poses, render_poses, render_timesteps, hwf, i_split, timesteps, keypoints, keypoints_timestep, keypoints_pose, depths = load_video_data(args)
+            bds, images, poses, render_poses, render_timesteps, hwf, i_split, timesteps, keypoints, keypoints_timestep, keypoints_pose, depths = load_video_data(args.datadir, args.factor, args.scene_flow, args.velocity)
             keypoints = np.array(keypoints)
             keypoints_timestep = np.array(keypoints_timestep)
             keypoints_pose = np.array(keypoints_pose)
         elif args.scene_flow or args.velocity:
-            bds, images, poses, render_poses, render_timesteps, hwf, i_split, timesteps, locations, locations_timestep, bounds, depths = load_video_data(args)
+            bds, images, poses, render_poses, render_timesteps, hwf, i_split, timesteps, locations, locations_timestep, bounds, depths = load_video_data(args.datadir, args.factor, args.scene_flow, args.velocity)
             locations = np.array(locations)
             locations_timestep = np.array(locations_timestep)
         else:
-            bds, images, poses, render_poses, render_timesteps, hwf, i_split, timesteps, depths = load_video_data(args)
+            bds, images, poses, render_poses, render_timesteps, hwf, i_split, timesteps, depths = load_video_data(args.datadir, args.factor, args.scene_flow, args.velocity)
         print('Loaded blender', images.shape, render_poses.shape, hwf, args.datadir)
 
         i_train = i_split[0]
@@ -908,7 +909,7 @@ def train():
             loc_t_before = loc_t_before.cuda()
             loc_t_after = loc_t_after.cuda()
 
-    N_iters = 200000
+    N_iters = args.N_iters
     print('Begin')
     print('TRAIN views are', i_train)
     #print('TEST views are', i_test)
@@ -1414,41 +1415,43 @@ def train():
                 print('Saved checkpoints at', path)
 
         if i%args.i_video==0 and i > 0:
+        #if True:
         # if i%args.i_video==0:
         # if True:
             # Turn on testing mode
 
             rgbs = []
-            if args.dataset_type == "blender" or args.dataset_type == "gibson":
-                for counter in range(render_timesteps.shape[0]):
+            if args.dataset_type == "blender" or args.dataset_type == "gibson" or args.dataset_type == "llff":
+                # print("#### Render timestep: ", render_timesteps.shape)
+                # for counter in range(render_timesteps.shape[0]):
 
-                    if args.ood_render:
-                        path = os.path.join(args.datadir, 'ood_render', 'r_{}.png'.format(counter))
-                    elif args.camera_render:
-                        path = os.path.join(args.datadir, 'render_camera_linear', 'r_{}.png'.format(counter))
-                    elif args.camera_render_after:
-                        path = os.path.join(args.datadir, 'render_camera_after', 'r_{}.png'.format(counter))
-                    elif args.rotate_render:
-                        path = os.path.join(args.datadir, 'render_rotate', 'r_{}.png'.format(counter))
-                    else:
-                        path = os.path.join(args.datadir, 'render_linear', 'r_{}.png'.format(counter))
+                #     if args.ood_render:
+                #         path = os.path.join(args.datadir, 'ood_render', 'r_{}.png'.format(counter))
+                #     elif args.camera_render:
+                #         path = os.path.join(args.datadir, 'render_camera_linear', 'r_{}.png'.format(counter))
+                #     elif args.camera_render_after:
+                #         path = os.path.join(args.datadir, 'render_camera_after', 'r_{}.png'.format(counter))
+                #     elif args.rotate_render:
+                #         path = os.path.join(args.datadir, 'render_rotate', 'r_{}.png'.format(counter))
+                #     else:
+                #         path = os.path.join(args.datadir, 'render_linear', 'r_{}.png'.format(counter))
 
-                    im = imread(path)[:, :,:3] / 255.
-                    H, W = im.shape[:2]
+                #     im = imread(path)[:, :,:3] / 255.
+                #     H, W = im.shape[:2]
 
 
-                    if args.half_res:
-                        H = H//2
-                        W = W//2
+                #     if args.half_res:
+                #         H = H//2
+                #         W = W//2
 
-                    if args.render_res:
-                        im = resize(im, (2*H, 2*W))
-                    else:
-                        im = resize(im, (H, W))
+                #     if args.render_res:
+                #         im = resize(im, (2*H, 2*W))
+                #     else:
+                #         im = resize(im, (H, W))
 
-                    rgbs.append(im)
+                #     rgbs.append(im)
 
-                rgbs_gt = rgbs
+                # rgbs_gt = rgbs
 
                 with torch.no_grad():
                     # images_select = images[-20:].detach().cpu().numpy()
