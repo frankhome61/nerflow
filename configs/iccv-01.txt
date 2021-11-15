@@ -1,0 +1,25 @@
+expname = gibson_dataset
+basedir = logs
+datadir = data/nerf_llff_data/iccv-02
+dataset_type = llff
+pouring = True
+velocity = False
+unsup_velocity = False
+factor = 1
+half_res = False
+
+N_samples = 64
+N_importance = 64
+
+
+use_viewdirs = True
+
+white_bkgd = True
+
+N_rand = 512
+
+N_iters = 2002
+i_weights = 500
+i_testset = 500
+i_video = 500
+render_factor = 2
