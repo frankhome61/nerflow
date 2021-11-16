@@ -619,6 +619,7 @@ def config_parser():
     parser.add_argument("--camera_render_after", action='store_true', help='render the end of the camera')
 
     parser.add_argument("--render_only", action='store_true', help='do not optimize, reload weights and render out render_poses path')
+    parser.add_argument("--render_only_fixed", action='store_true', help='do not optimize, reload weights and render out render_poses path')
     parser.add_argument("--render_test", action='store_true', help='render the test set instead of render_poses path')
     parser.add_argument("--noise", action='store_true', help='add noise to images (for video processing)')
     parser.add_argument("--pouring", action='store_true', help='pouring fluid')
@@ -826,7 +827,7 @@ def train():
         with torch.no_grad():
             # render_test switches to test poses
             images = images
-            poses = render_poses#torch.Tensor(poses).to(device)
+            poses = render_poses #torch.Tensor(poses).to(device)
 
             testsavedir = os.path.join(basedir, expname, 'renderonly_{}_{:06d}'.format('test' if args.render_test else 'path', start))
             os.makedirs(testsavedir, exist_ok=True)
@@ -835,8 +836,26 @@ def train():
             rgbs, _, _, _ = render_path(poses, timesteps, hwf, args.chunk / 2, render_kwargs_test, gt_imgs=images, savedir=testsavedir, render_factor=args.render_factor)
             print('Done rendering', testsavedir)
             imageio.mimwrite(os.path.join(testsavedir, 'video.mp4'), to8b(rgbs), fps=30, quality=8)
-
             return
+
+    if args.render_only_fixed:
+        print('RENDER ONLY')
+        with torch.no_grad():
+            # render_test switches to test poses
+            images = images
+            print("new pose shape before: ", poses.shape)
+            poses = torch.Tensor(np.concatenate([poses[0:1, :, :] for _ in range(poses.shape[0])])).to(device)
+            print("new pose shape: ", poses.shape)
+
+            testsavedir = os.path.join(basedir, expname, 'renderonly_fixed_{}_{:06d}'.format('test' if args.render_test else 'path', start))
+            os.makedirs(testsavedir, exist_ok=True)
+            print('test poses shape', render_poses.shape)
+
+            rgbs, _, _, _ = render_path(poses, timesteps, hwf, args.chunk / 2, render_kwargs_test, gt_imgs=images, savedir=testsavedir, render_factor=args.render_factor)
+            print('Done rendering', testsavedir)
+            imageio.mimwrite(os.path.join(testsavedir, 'video.mp4'), to8b(rgbs), fps=30, quality=8)
+            return
+
 
     # Prepare raybatch tensor if batching random rays
     N_rand = args.N_rand
