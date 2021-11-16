@@ -460,6 +460,8 @@ def load_video_data(basedir, factor=8, recenter=True, bd_factor=.75, spherify=Fa
     poses = poses[:, :3, :4]  # N x 3 x 4
     i_split = [np.arange(poses.shape[0]), np.arange(poses.shape[0]), np.arange(poses.shape[0])]
 
+    render_poses = np.load(os.path.join(basedir, "render_poses.npy"))
+    print("loaded on-disk render pose")
     print(args)
     if scene_flow or velocity:
         return bds, images, poses, render_poses, render_timesteps, hwf, i_split, train_timesteps, location, location_timesteps, bounds, depths

@@ -826,7 +826,7 @@ def train():
         with torch.no_grad():
             # render_test switches to test poses
             images = images
-            poses = torch.Tensor(poses).to(device)
+            poses = render_poses#torch.Tensor(poses).to(device)
 
             testsavedir = os.path.join(basedir, expname, 'renderonly_{}_{:06d}'.format('test' if args.render_test else 'path', start))
             os.makedirs(testsavedir, exist_ok=True)
