@@ -4,6 +4,7 @@ datadir = /sharedvol1/users/frank/nerflow/data/nerf_llff_data/synthetic-00
 dataset_type = llff
 pouring = False
 factor = 1
+render_factor = 1
 velocity = False
 unsup_velocity = False
 
