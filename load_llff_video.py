@@ -140,6 +140,7 @@ def _load_data(basedir, factor=None, width=None, height=None, load_imgs=True):
     bds = np.moveaxis(bds, -1, 0).astype(np.float32)
 
     # Rescale if bd_factor is provided
+    bd_factor = 0.9
     # sc = 1. if bd_factor is None else 1./(bds.min() * bd_factor)
     sc = 1./(bds.max() - bds.min())
     poses[:,:3,3] *= sc
