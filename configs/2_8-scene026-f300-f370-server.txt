@@ -1,0 +1,20 @@
+expname = 2-8-scene026-f300-f370
+basedir = /sharedvol1/users/frank/nerflow/logs
+datadir = /sharedvol1/users/frank/nerflow/data/nerf_llff_data/test_output_2_8/scene026-f300-f370
+dataset_type = llff
+pouring = False
+factor = 1
+render_factor = 4
+velocity = False
+unsup_velocity = False
+
+half_res = False
+
+N_samples = 32
+N_importance = 32
+
+use_viewdirs = True
+
+white_bkgd = True
+
+N_rand = 512

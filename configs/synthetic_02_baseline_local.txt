@@ -1,0 +1,20 @@
+expname = synthetic-02
+basedir = ./logs
+datadir = ./data/nerf_llff_data/synthetic-02
+dataset_type = llff
+pouring = False
+factor = 1
+render_factor = 1
+velocity = False
+unsup_velocity = False
+
+half_res = False
+
+N_samples = 32
+N_importance = 32
+
+use_viewdirs = True
+
+white_bkgd = True
+
+N_rand = 512
